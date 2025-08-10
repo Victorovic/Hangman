@@ -9,7 +9,7 @@ public class Game {
     private final char[] secretChars;
     private final char[] mask;
     private int missCount = 0;
-    private static final int MAX_ERRORS = 6;
+    private static final int MAX_MISSES = 6;
     private final Set<Character> guessedLetters = new HashSet<>();
 
 
@@ -55,7 +55,7 @@ public class Game {
     }
 
     public boolean isLost() {
-        return missCount >= MAX_ERRORS;
+        return missCount >= MAX_MISSES;
     }
 
     public int getMissCount() {
@@ -72,4 +72,7 @@ public class Game {
 
     }
 
+    public int getMaxMisses() {
+        return MAX_MISSES;
+    }
 }

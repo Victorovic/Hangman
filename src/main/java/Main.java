@@ -98,6 +98,8 @@ public class Main {
                 case INCORRECT -> {
                     System.out.println("Такой буквы нет");
                     printer.print(game.getMissCount());
+                    System.out.println("Ваше количество ошибок: " + game.getMissCount());
+                    System.out.println("Максимальное количество ошибок: " + game.getMaxMisses());
                 }
                 case ALREADY_GUESSED -> System.out.println("Эту букву уже вводили");
             }
