@@ -1,8 +1,14 @@
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import domain.Game;
+import domain.GuessResult;
+import repository.DictionaryRepository;
+import service.GameService;
+import ui.HangmanPrinter;
+
+
 import java.util.List;
 import java.util.Scanner;
+
+import static domain.Game.isCyrillicLetter;
 
 public class Main {
     private final GameService gameService;
@@ -17,14 +23,14 @@ public class Main {
         this.printer = hangmanPrinter;
     }
 
-    public static void main(String[] args) throws IOException {
-       Path dictionaryPath = Paths.get("src/main/resources/dictionary.txt");
-       DictionaryRepository repository = new DictionaryRepository(dictionaryPath);
-        List<String> master = repository.loadMasterDictionary();
+    public static void main(String[] args) {
+        DictionaryRepository repository = new DictionaryRepository("/dictionary.txt");
+        List<String>  master = repository.loadMasterDictionary();
         GameService gameService = new GameService(master);
         HangmanPrinter printer = new HangmanPrinter();
 
-         new Main(gameService, printer).run();
+        new Main(gameService, printer).run();
+
     }
 
    private void run() {
@@ -57,7 +63,7 @@ public class Main {
         System.out.print(">> ");
     }
 
-    private static Boolean isInteger(String s) {
+    private static boolean isInteger(String s) {
         try {
             Integer.parseInt(s);
             return true;
@@ -67,23 +73,33 @@ public class Main {
     }
 
     private void playGame() {
-        Game game = gameService.getGame();
+        Game game = gameService.getOrCreateGame();
 
         while (!game.isWon() && !game.isLost()) {
             System.out.println("Слово: " + game.getMaskedWord());
             System.out.print("Введите букву: ");
-            String input = scanner.nextLine();
-            if (input.isEmpty()) {
-                System.out.println("Нужно ввести букву!");
+            String input = scanner.nextLine().trim();
+            if (input.isEmpty() || input.codePointCount(0, input.length()) != 1) {
+                System.out.println("Нужно ввести ровно одну букву!");
                 continue;
             }
-            char letter = input.charAt(0);
-            boolean correct = game.guess(letter);
-            if (correct) {
-                System.out.println("Угадали!");
-            } else {
-                System.out.println("Такой буквы нет");
-                printer.print(game.getMissCount());
+            int cp = input.codePointAt(0);
+
+            if (!isCyrillicLetter(cp)) {
+                System.out.println("Нужна кириллическая буква");
+                continue;
+            }
+
+            int lowerCp = Character.toLowerCase(cp);
+            char letter = (char) lowerCp;
+            GuessResult result = game.guess(letter);
+            switch (result) {
+                case CORRECT -> System.out.println("Угадали");
+                case INCORRECT -> {
+                    System.out.println("Такой буквы нет");
+                    printer.print(game.getMissCount());
+                }
+                case ALREADY_GUESSED -> System.out.println("Эту букву уже вводили");
             }
 
             if (game.isWon()) {
@@ -91,7 +107,6 @@ public class Main {
             } else if (game.isLost()) {
                 System.out.println("Вы проиграли. Загаданное слово: " + game.getSecretWord());
             }
-
             System.out.println();
         }
     }

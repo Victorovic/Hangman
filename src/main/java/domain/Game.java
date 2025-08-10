@@ -1,3 +1,5 @@
+package domain;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -11,6 +13,7 @@ public class Game {
     private final Set<Character> guessedLetters = new HashSet<>();
 
 
+
     public Game(String secretWord) {
         this.secretWord = secretWord;
         this.secretChars = secretWord.toLowerCase().toCharArray();
@@ -18,23 +21,24 @@ public class Game {
         Arrays.fill(mask, '_');
     }
 
-    public boolean guess(char letter) {
-        char normalizedGuess = Character.toLowerCase(letter);
-        if (!guessedLetters.add(normalizedGuess)) {
-            return false;
+    public GuessResult guess(char letter) {
+        if (!guessedLetters.add(letter)) {
+            return GuessResult.ALREADY_GUESSED;
         }
         boolean found = false;
         for (int i = 0; i < secretChars.length; i++) {
-            if (secretChars[i] == normalizedGuess) {
-                mask[i] = normalizedGuess;
+            if (secretChars[i] == letter) {
+                mask[i] = letter;
                 found = true;
             }
         }
 
-        if (!found) {
+        if (found) {
+            return GuessResult.CORRECT;
+        } else {
             missCount++;
+            return GuessResult.INCORRECT;
         }
-        return found;
     }
 
     public String getMaskedWord() {
@@ -58,11 +62,14 @@ public class Game {
         return missCount;
     }
 
-    public int getMaxErrors() {
-        return MAX_ERRORS;
-    }
-
     public String getSecretWord() {
         return secretWord;
     }
+
+    public  static boolean isCyrillicLetter(int codePoint) {
+        return Character.UnicodeScript.of(codePoint) == Character.UnicodeScript.CYRILLIC
+                && Character.isLetter(codePoint);
+
+    }
+
 }

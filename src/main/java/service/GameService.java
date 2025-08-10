@@ -1,12 +1,14 @@
+package service;
+
+import domain.Game;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 public class GameService {
     private final List<String> masterDictionary;
     private List<String> gameDictionary;
-    private final Random random = new Random();
     private Game currentGame;
 
     public GameService(List<String> masterDictionary) {
@@ -14,6 +16,9 @@ public class GameService {
         if (this.masterDictionary.isEmpty()) {
             throw new IllegalArgumentException("Master dictionary is empty");
         }
+        this.gameDictionary = new ArrayList<>(this.masterDictionary);
+        Collections.shuffle(this.gameDictionary);
+
     }
 
     public Game startNewGame() {
@@ -23,7 +28,7 @@ public class GameService {
         return currentGame;
     }
 
-    public Game getGame() {
+    public Game getOrCreateGame() {
         if (currentGame == null || currentGame.isWon() || currentGame.isLost()) {
             return startNewGame();
         }
@@ -31,14 +36,14 @@ public class GameService {
     }
 
     private void refillGameDictionaryIfNeeded() {
-        if (gameDictionary == null || gameDictionary.isEmpty()) {
+        if (gameDictionary.isEmpty()) {
             gameDictionary = new ArrayList<>(masterDictionary);
             Collections.shuffle(gameDictionary);
         }
     }
 
     private String pickAndRemoveRandomWord() {
-        return gameDictionary.remove(random.nextInt(gameDictionary.size()));
+        return gameDictionary.remove(gameDictionary.size() - 1);
     }
 
 }
